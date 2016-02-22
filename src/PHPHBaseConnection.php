@@ -9,12 +9,13 @@ require 'Thrift/ClassLoader/ThriftClassLoader.php';
 use Thrift\ClassLoader\ThriftClassLoader;
 $loader = new ThriftClassLoader();
 $loader->registerNamespace('Thrift', __DIR__);
-$loader->registerDefinition('Hbase', 'HBase');
+$loader->registerNamespace('Hbase', __DIR__);
 $loader->register(true);
 
 
 use Hbase\HbaseClient;
-use Thrift\Protocol\TBinaryProtocolAccelerated;
+use Hbase\HbaseIf;
+use Thrift\Protocol\TBinaryProtocol;
 use Thrift\Transport\TSocket;
 use Thrift\Transport\TFramedTransport;
 use Thrift\Exception\TException;
@@ -22,7 +23,7 @@ use Thrift\Exception\TException;
 /**
  * HBase Client class
  */
-class PHPHBaseConnection
+class SmartHbaseClient
 {
     protected $hbase_host;
     protected $hbase_port;
@@ -32,6 +33,8 @@ class PHPHBaseConnection
     protected $protocol;
     protected $client;
 
+    protected $retryNum = 2;
+
     public function __construct( $host, $port )
     {
         $this->hbase_host = $host;
@@ -40,7 +43,7 @@ class PHPHBaseConnection
         $this->socket->setSendTimeout(120,600);
         $this->socket->setRecvTimeout(240,1500);
         $this->transport = new TFramedTransport( $this->socket );
-        $this->protocol  = new TBinaryProtocolAccelerated( $this->transport );
+        $this->protocol  = new TBinaryProtocol( $this->transport );
         $this->client    = new HbaseClient( $this->protocol );
 
 
@@ -61,5 +64,16 @@ class PHPHBaseConnection
 
     public function getClient() {
         return $this->client;
+    }
+
+
+    public function __call($name, $arguments)
+    {
+        for( $num = 0 ; $num < $this->retryNum ; $num++ ) {
+            try {
+                return call_user_func_array(array($this->client,$name),$arguments);
+            } catch (TTransportException $e) {}
+        }
+        throw $e;
     }
 }
