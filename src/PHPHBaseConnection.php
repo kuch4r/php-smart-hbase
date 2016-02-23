@@ -35,6 +35,8 @@ class SmartHbaseClient
 
     protected $retryNum = 2;
 
+    protected const NO_RETRY_FUNCTIONS = array('increment','incrementRows','atomicIncrement');
+
     public function __construct( $host, $port )
     {
         $this->hbase_host = $host;
@@ -62,14 +64,18 @@ class SmartHbaseClient
         $this->socket->close();
     }
 
-    public function getClient() {
-        return $this->client;
+    public function setRetryCount( $num ) {
+        $this->retryNum = $num;
     }
 
+    public function getRetryCount() {
+        return $this->retryNum;
+    }
 
     public function __call($name, $arguments)
     {
-        for( $num = 0 ; $num < $this->retryNum ; $num++ ) {
+        $retryNum = in_array($name, self::NO_RETRY_FUNCTIONS) ? 1 : $this->retryNum;
+        for( $num = 0 ; $num < $retryNum ; $num++ ) {
             try {
                 return call_user_func_array(array($this->client,$name),$arguments);
             } catch (TTransportException $e) {}
