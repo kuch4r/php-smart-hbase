@@ -1,6 +1,6 @@
 <?php
 
-namespace kuchar\phphbase;
+namespace kuchar\smarthbase;
 
 /** Thrift root directory */
 require 'Thrift/ClassLoader/ThriftClassLoader.php';
@@ -14,7 +14,7 @@ $loader->register(true);
 
 
 use Hbase\HbaseClient;
-use Hbase\HbaseIf;
+use Hbase\TRowResult;
 use Thrift\Protocol\TBinaryProtocol;
 use Thrift\Transport\TSocket;
 use Thrift\Transport\TFramedTransport;
@@ -23,7 +23,7 @@ use Thrift\Exception\TException;
 /**
  * HBase Client class
  */
-class SmartHbaseClient
+class SmartHConnection
 {
     protected $hbase_host;
     protected $hbase_port;
@@ -35,10 +35,9 @@ class SmartHbaseClient
 
     protected $retryNum = 2;
 
-    protected const NO_RETRY_FUNCTIONS = array('increment','incrementRows','atomicIncrement');
+    const NO_RETRY_FUNCTIONS = array('increment','incrementRows','atomicIncrement');
 
-    public function __construct( $host, $port )
-    {
+    public function __construct( $host, $port ) {
         $this->hbase_host = $host;
         $this->hbase_port = $port;
         $this->socket    = new TSocket( $this->hbase_host, $this->hbase_port, true );
@@ -58,13 +57,14 @@ class SmartHbaseClient
         }
     }
 
-    public function __destruct()
-    {
+    public function __destruct() {
         $this->transport->close();
         $this->socket->close();
     }
 
-    public function setRetryCount( $num ) {
+    public function setRetryCount( $num ) { if ($num < 1 ) {
+            throw new \InvalidArgumentException("Retry count value cannot be less then 1");
+        }
         $this->retryNum = $num;
     }
 
@@ -72,14 +72,35 @@ class SmartHbaseClient
         return $this->retryNum;
     }
 
-    public function __call($name, $arguments)
-    {
+    /**
+     * Expose native client methods with "native" prefix, e.x. "nativeGetRow()"
+     *
+     * @param $name
+     * @param $arguments
+     * @return mixed
+     * @throws TTransportException
+     */
+    public function __call($name, $arguments) {
+        if( 0 !== strpos($name, 'native')){
+            throw new \RuntimeException("Unknown method: ".$name);
+        }
+        $callname = lcfirst(substr($name,6));
+        if( !method_exists($this->client,$callname)) {
+            throw new \RuntimeException("Unknown method: ".$name);
+        }
+
         $retryNum = in_array($name, self::NO_RETRY_FUNCTIONS) ? 1 : $this->retryNum;
         for( $num = 0 ; $num < $retryNum ; $num++ ) {
             try {
-                return call_user_func_array(array($this->client,$name),$arguments);
+                return call_user_func_array(array($this->client,$callname),$arguments);
             } catch (TTransportException $e) {}
         }
         throw $e;
     }
+
+    public function table( $name ) {
+        return new SmartTable($name, $this);
+    }
+
+
 }

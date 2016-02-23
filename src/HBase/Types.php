@@ -1357,6 +1357,10 @@ class TScan {
      * @var bool
      */
     public $sortColumns = null;
+    /**
+     * @var bool
+     */
+    public $reversed = null;
 
     public function __construct($vals=null) {
         if (!isset(self::$_TSPEC)) {
@@ -1397,6 +1401,10 @@ class TScan {
                     'var' => 'sortColumns',
                     'type' => TType::BOOL,
                 ),
+                9 => array(
+                    'var' => 'reversed',
+                    'type' => TType::BOOL,
+                ),
             );
         }
         if (is_array($vals)) {
@@ -1423,6 +1431,9 @@ class TScan {
             }
             if (isset($vals['sortColumns'])) {
                 $this->sortColumns = $vals['sortColumns'];
+            }
+            if (isset($vals['reversed'])) {
+                $this->reversed = $vals['reversed'];
             }
         }
     }
@@ -1512,6 +1523,13 @@ class TScan {
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 9:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->reversed);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -1575,6 +1593,11 @@ class TScan {
         if ($this->sortColumns !== null) {
             $xfer += $output->writeFieldBegin('sortColumns', TType::BOOL, 8);
             $xfer += $output->writeBool($this->sortColumns);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->reversed !== null) {
+            $xfer += $output->writeFieldBegin('reversed', TType::BOOL, 9);
+            $xfer += $output->writeBool($this->reversed);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();
