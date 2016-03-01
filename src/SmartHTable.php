@@ -8,7 +8,7 @@
 
 namespace kuchar\smarthbase;
 use Hbase\TScan;
-use Thrift\Exception\TTransportException;
+use Hbase\TRowResult;
 
 
 class SmartHTable
@@ -43,8 +43,8 @@ class SmartHTable
     }
 
     public function scan( $row_start = null, $row_stop = null, $row_prefix = null, $columns = null,
-                          $filter = null, $batch_size = 1000, $scan_batching = null,
-                          $limit = null, $sorted_columns = false ) {
+                          $filter = null, $batch_size = 1000,
+                          $limit = null, $sorted_columns = false, $scan_batching = null ) {
         if( $batch_size < 1 ){
             throw new \InvalidArgumentException("'batch_size' must be >= 1");
         }
@@ -75,7 +75,7 @@ class SmartHTable
             'sortColumns' => $sorted_columns
         ));
 
-        $scan_id = $this->nativeScannerOpenWithScan( $this->table, $scan, array() );
+        $scan_id = $this->connection->nativeScannerOpenWithScan( $this->table, $scan, array() );
 
         $num_returend = $num_fetched = 0;
         try {
@@ -86,7 +86,7 @@ class SmartHTable
                     $how_many = min($batch_size, $limit - $num_returend);
                 }
 
-                $items = $this->nativeScannerGetList($scan_id, $how_many);
+                $items = $this->connection->nativeScannerGetList($scan_id, $how_many);
 
                 if (empty($items)) {
                     return; // scan has finished
@@ -97,10 +97,16 @@ class SmartHTable
                 foreach ($items as $item) {
                     $row = $this->hydrateRow($item);
                     yield $item->row => $row;
+
+                    $num_returend++;
+                    if( !is_null($limit) && $num_returend >= $limit ) {
+                        return;
+                    }
                 }
+
             }
         } finally {
-            $this->nativeScannerClose( $scan_id );
+            $this->connection->nativeScannerClose( $scan_id );
         }
     }
 

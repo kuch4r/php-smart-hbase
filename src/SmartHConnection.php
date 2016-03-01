@@ -20,8 +20,10 @@ use Thrift\Transport\TSocket;
 use Thrift\Transport\TFramedTransport;
 use Thrift\Exception\TException;
 
+require_once ('SmartHTable.php');
+
 /**
- * HBase Client class
+ * Hbase Client class
  */
 class SmartHConnection
 {
@@ -35,7 +37,7 @@ class SmartHConnection
 
     protected $retryNum = 2;
 
-    const NO_RETRY_FUNCTIONS = array('increment','incrementRows','atomicIncrement');
+    public static $NO_RETRY_FUNCTIONS = array('increment','incrementRows','atomicIncrement');
 
     public function __construct( $host, $port ) {
         $this->hbase_host = $host;
@@ -55,6 +57,10 @@ class SmartHConnection
                 $this->socket->close();
             }
         }
+    }
+
+    public function table( $name ) {
+        return new SmartHTable( $name , $this );
     }
 
     public function __destruct() {
@@ -89,7 +95,7 @@ class SmartHConnection
             throw new \RuntimeException("Unknown method: ".$name);
         }
 
-        $retryNum = in_array($name, self::NO_RETRY_FUNCTIONS) ? 1 : $this->retryNum;
+        $retryNum = in_array($name, self::$NO_RETRY_FUNCTIONS) ? 1 : $this->retryNum;
         for( $num = 0 ; $num < $retryNum ; $num++ ) {
             try {
                 return call_user_func_array(array($this->client,$callname),$arguments);
@@ -97,10 +103,5 @@ class SmartHConnection
         }
         throw $e;
     }
-
-    public function table( $name ) {
-        return new SmartTable($name, $this);
-    }
-
 
 }
