@@ -22,6 +22,8 @@ use Thrift\Exception\TException;
 
 require_once ('SmartHTable.php');
 
+use kuchar\smarthbase\SmartHTable;
+
 /**
  * Hbase Client class
  */

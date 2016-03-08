@@ -21,11 +21,11 @@ class SmartHTable
         $this->connection = $connection;
     }
 
-    public function row( $key, $columns = null, $timestamp = null ) {
+    public function row( $key, $columns = array(), $timestamp = null ) {
         if( !is_null($timestamp)) {
-            $data = $this->connection->nativegetRowWithColumnsTs($this->table, $key, $columns, $timestamp, array());
+            $data = $this->connection->nativeGetRowWithColumnsTs($this->table, $key, $columns, $timestamp, array());
         } else {
-            $data = $this->connection->nativegetRowWithColumns($this->table, $key, $columns, array());
+            $data = $this->connection->nativeGetRowWithColumns($this->table, $key, $columns, array());
         }
         if( !count($data) ) {
             return null;
@@ -33,11 +33,11 @@ class SmartHTable
         return $this->hydrateRow($data[0]);
     }
 
-    public function rows( $keys, $columns = null, $timestamp = null ) {
+    public function rows( $keys, $columns = array(), $timestamp = null ) {
         if( !is_null($timestamp)) {
-            $data = $this->connection->nativegetRowsWithColumnsTs($this->table, $keys, $columns, $timestamp, array());
+            $data = $this->connection->nativeGetRowsWithColumnsTs($this->table, $keys, $columns, $timestamp, array());
         } else {
-            $data = $this->connection->nativegetRowsWithColumns($this->table, $keys, $columns, array());
+            $data = $this->connection->nativeGetRowsWithColumns($this->table, $keys, $columns, array());
         }
         return $this->hydrateRows( $data );
     }
@@ -113,7 +113,7 @@ class SmartHTable
     protected  function hydrateRows( array $result ) {
         $return = array();
         foreach( $result as $row ) {
-            $return[$row->key] = $this->hydrateRow($row);
+            $return[$row->row] = $this->hydrateRow($row);
         }
         return $return;
     }
