@@ -57,6 +57,11 @@ class SmartHConnection
                 $this->socket->close();
             }
         }
+
+    }
+
+    public function close() {
+
     }
 
     public function table( $name ) {
