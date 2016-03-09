@@ -22,6 +22,9 @@ class SmartHTable
     }
 
     public function row( $key, $columns = array(), $timestamp = null ) {
+    	if(is_null($columns)){
+    		$columns = array();
+    	}
         if( !is_null($timestamp)) {
             $data = $this->connection->nativeGetRowWithColumnsTs($this->table, $key, $columns, $timestamp, array());
         } else {
@@ -34,6 +37,9 @@ class SmartHTable
     }
 
     public function rows( $keys, $columns = array(), $timestamp = null ) {
+    	if(is_null($columns)){
+    		$columns = array();
+    	}
         if( !is_null($timestamp)) {
             $data = $this->connection->nativeGetRowsWithColumnsTs($this->table, $keys, $columns, $timestamp, array());
         } else {
