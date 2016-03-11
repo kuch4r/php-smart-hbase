@@ -1,0 +1,22 @@
+{
+    "name": "kuchar/php-smart-hbase",
+    "type": "library",
+    "description": "Hbase extension",
+    "keywords": [
+        "hbase",
+        "extensions"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Paweł Kucharski",
+            "email": "p.kucharski@snrs.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3"
+    },
+    "autoload": {
+        "psr-0": { "kuchar\\smarthbase\\": "src/" }
+    }
+}
