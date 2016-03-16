@@ -43,8 +43,8 @@ class SmartHConnection
         $this->hbase_host = $host;
         $this->hbase_port = $port;
         $this->socket    = new TSocket( $this->hbase_host, $this->hbase_port, true );
-        $this->socket->setSendTimeout(120,600);
-        $this->socket->setRecvTimeout(240,1500);
+        $this->socket->setSendTimeout(5000);
+        $this->socket->setRecvTimeout(20000);
         $this->transport = new TFramedTransport( $this->socket );
         $this->protocol  = new TBinaryProtocol( $this->transport );
         $this->client    = new HbaseClient( $this->protocol );
