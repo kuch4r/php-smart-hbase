@@ -21,6 +21,22 @@ class SmartHTable
         $this->connection = $connection;
     }
 
+    public function put( $key, $values ) {
+        $batch = $this->batch();
+        $batch->put( $key, $values );
+        $batch->send();
+    }
+
+    public function delete( $key, $columns ) {
+        $batch = $this->batch();
+        $batch->delete( $key, $columns );
+        $batch->send();
+    }
+
+    public function batch() {
+        return new SmartHBatch( $this );
+    }
+
     public function row( $key, $columns = array(), $timestamp = null ) {
     	if(is_null($columns)){
     		$columns = array();
@@ -115,6 +131,15 @@ class SmartHTable
             $this->connection->nativeScannerClose( $scan_id );
         }
     }
+
+    public function getConnection() {
+        return $this->connection;
+    }
+
+    public function getTable() {
+        return $this->table;
+    }
+
 
     protected  function hydrateRows( array $result ) {
         $return = array();
