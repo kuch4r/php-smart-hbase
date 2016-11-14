@@ -15,7 +15,7 @@ $loader->register(true);
 
 use Hbase\HbaseClient;
 use Hbase\TRowResult;
-use Thrift\Protocol\TBinaryProtocol;
+use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Transport\TSocket;
 use Thrift\Transport\TFramedTransport;
 use Thrift\Exception\TException;
@@ -51,7 +51,7 @@ class SmartHConnection
             $this->socket->setRecvTimeout($recvTimeout);
         }
         $this->transport = new TFramedTransport( $this->socket );
-        $this->protocol  = new TBinaryProtocol( $this->transport );
+        $this->protocol  = new TBinaryProtocolAccelerated( $this->transport );
         $this->client    = new HbaseClient( $this->protocol );
 
 
