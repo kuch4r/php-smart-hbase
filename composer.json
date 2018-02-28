@@ -2,7 +2,6 @@
     "name": "kuchar/php-smart-hbase",
     "type": "library",
     "description": "Hbase extension",
-    "version": "1.0.0",
     "keywords": [
         "hbase",
         "extensions"
