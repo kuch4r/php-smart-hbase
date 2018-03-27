@@ -29,7 +29,7 @@ class SmartHConnectionConfigTest extends TestCase {
         new SmartHConnectionConfig("");
     }
 
-    public function testArgs() {
+    public function testArgsBinaryFramed() {
         $config = new SmartHConnectionConfig("test.host.com:9090/?protocol=binary&transport=framed&timeout=9999");
         $this->assertEquals('test.host.com', $config->host);
         $this->assertEquals(9090, $config->port);
@@ -39,11 +39,19 @@ class SmartHConnectionConfigTest extends TestCase {
         $this->assertEquals('9999', $config->sendTimeout);
     }
 
-    public function testArgs2() {
+    public function testArgsCompactBuffered() {
         $config = new SmartHConnectionConfig("test.host.com:9090/?protocol=compact&transport=buffered");
         $this->assertEquals('test.host.com', $config->host);
         $this->assertEquals(9090, $config->port);
         $this->assertEquals('compact', $config->protocol);
+        $this->assertEquals('buffered', $config->transport);
+    }
+
+    public function testArgsBinaryAccelerated() {
+        $config = new SmartHConnectionConfig("test.host.com:9090/?protocol=binary_accelerated&transport=buffered");
+        $this->assertEquals('test.host.com', $config->host);
+        $this->assertEquals(9090, $config->port);
+        $this->assertEquals('binary_accelerated', $config->protocol);
         $this->assertEquals('buffered', $config->transport);
     }
 

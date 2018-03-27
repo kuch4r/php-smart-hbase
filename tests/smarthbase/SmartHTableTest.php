@@ -36,6 +36,20 @@ class SmartHTableTest extends TestCase {
         $this->assertEquals('val2', $result[THRIFT_TEST_CF.':col2']);
     }
 
+    public function testAdd2RowsFromConnection() {
+        $table = $this->connection->table(THRIFT_TEST_TABLE);
+        $table->put('row1', [THRIFT_TEST_CF.':col2' => 'val2']);
+        $table->put('row2', [THRIFT_TEST_CF.':col2' => 'val3']);
+        $result = $table->rows(['row1', 'row2']);
+
+        $this->assertEquals(2, count($result));
+        $this->assertArrayHasKey('row1', $result);
+        $this->assertArrayHasKey('row2', $result);
+        $this->assertArrayHasKey(THRIFT_TEST_CF.':col2', $result['row1']);
+        $this->assertArrayHasKey(THRIFT_TEST_CF.':col2', $result['row2']);
+        $this->assertEquals('val2', $result['row1'][THRIFT_TEST_CF.':col2']);
+    }
+
     public function testScan() {
         $table = $this->connection->table(THRIFT_TEST_TABLE);
         $table->put('row1', [THRIFT_TEST_CF.':col1' => 'val1']);

@@ -3,8 +3,9 @@
 namespace kuchar\smarthbase;
 
 use Hbase\HbaseClient;
+use Thrift\Protocol\TBinaryProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
-use Thrift\Protocol\TCompactProtocolAccelerated;
+use Thrift\Protocol\TCompactProtocol;
 use Thrift\Transport\TBufferedTransport;
 use Thrift\Transport\TSocket;
 use Thrift\Transport\TFramedTransport;
@@ -93,21 +94,24 @@ class SmartHConnection
         }
     }
 
-    protected function connect() {
+    protected function connect()
+    {
         $this->socket = new TSocket($this->connectionConfig->host, $this->connectionConfig->port, true);
         $this->socket->setSendTimeout($this->connectionConfig->sendTimeout);
         $this->socket->setRecvTimeout($this->connectionConfig->recvTimeout);
 
-        if($this->connectionConfig->transport == 'framed') {
-            $this->transport = new TFramedTransport( $this->socket );
+        if ($this->connectionConfig->transport == 'framed') {
+            $this->transport = new TFramedTransport($this->socket);
         } else {
-            $this->transport = new TBufferedTransport( $this->socket );
+            $this->transport = new TBufferedTransport($this->socket);
         }
 
-        if($this->connectionConfig->protocol == 'binary') {
-            $this->protocol  = new TBinaryProtocolAccelerated( $this->transport );
+        if ($this->connectionConfig->protocol == 'binary_accelerated') {
+            $this->protocol = new TBinaryProtocolAccelerated($this->transport);
+        } elseif($this->connectionConfig->protocol == 'binary') {
+            $this->protocol  = new TBinaryProtocol( $this->transport );
         } else {
-            $this->protocol  = new TCompactProtocolAccelerated( $this->transport );
+            $this->protocol  = new TCompactProtocol( $this->transport );
         }
 
         $this->client    = new HbaseClient( $this->protocol );

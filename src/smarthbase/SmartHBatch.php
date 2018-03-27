@@ -39,13 +39,15 @@ class SmartHBatch {
         }
     }
 
-    public function delete( $row, $columns ) {
+    public function delete( $row, $columns) {
         if( !isset($this->mutations[$row])) {
             $this->mutations[$row] = array();
         }
-        foreach( $columns as $column ) {
-            $this->mutations[$row][] = new Mutation( array('column' => $column, 'isDelete' => true) );
+
+        foreach ($columns as $column) {
+            $this->mutations[$row][] = new Mutation(array('column' => $column, 'isDelete' => true));
         }
+
         $this->mutation_count += count($columns);
         if( $this->batch_size && $this->mutation_count > $this->batch_size ) {
             $this->send();
@@ -55,13 +57,14 @@ class SmartHBatch {
     public function send() {
         $bms = array();
         foreach( $this->mutations as $row => $m ) {
-            $bms[] = new BatchMutation( array( 'row' => $row, 'mutations' => $m ) );
+            $bms[] = new BatchMutation(array('row' => $row, 'mutations' => $m));
         }
         if( empty($bms)) {
-            return;
+            return 0;
         }
         $this->table->getConnection()->nativeMutateRows( $this->table->getTable(), $bms, array() );
 
         $this->resetMutations();
+        return count($bms);
     }
 }

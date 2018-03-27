@@ -41,7 +41,7 @@ class SmartHConnectionConfig {
     protected function parseParam($name, $value) {
         switch($name) {
             case 'protocol':
-                if( !in_array($value, ['binary', 'compact'], false)) {
+                if( !in_array($value, ['binary', 'binary_accelerated', 'compact'], false)) {
                     throw new \InvalidArgumentException('Uknown protocol type, use binary or compact');
                 }
                 $this->protocol = $value;

@@ -27,10 +27,14 @@ class SmartHTable
         $batch->send();
     }
 
-    public function delete( $key, $columns ) {
-        $batch = $this->batch();
-        $batch->delete( $key, $columns );
-        $batch->send();
+    public function delete( $key, $columns = null ) {
+        if(is_null($columns)) {
+            $this->connection->nativeDeleteAllRow($this->table, $key, array());
+        } else {
+            $batch = $this->batch();
+            $batch->delete($key, $columns);
+            $batch->send();
+        }
     }
 
     public function batch() {
